@@ -1551,7 +1551,7 @@
       <div class="ornament" style="margin:24px 0 16px">
         <div class="ornament-diamond"></div>
       </div>
-      <p class="cover-date">二〇二六年 · 十月二十四日</p>
+      <p class="cover-date">二〇二六年 · 十一月一日</p>
     </div>
 
     <p class="cover-subtitle reveal reveal-delay-4">
@@ -1754,7 +1754,7 @@
     <div class="ornament" style="max-width:220px;margin:0 auto 18px;"><div class="ornament-diamond"></div></div>
     <h3 class="couple-caption-title">Together Forever</h3>
     <p class="couple-caption-cn">执子之手 · 与子偕老</p>
-    <span class="couple-date-tag">October 24 · 2026</span>
+    <span class="couple-date-tag">November 1 · 2026</span>
   </div>
 </section>
 
@@ -1802,8 +1802,8 @@
       <div class="detail-card reveal">
         <div class="detail-icon">◈</div>
         <p class="detail-label">Date · 日期</p>
-        <p class="detail-value">二〇二六年十月二十四日</p>
-        <p class="detail-sub">Saturday · 星期六</p>
+        <p class="detail-value">二〇二六年十一月一日</p>
+        <p class="detail-sub">Sunday · 星期日</p>
       </div>
 
       <div class="detail-card reveal reveal-delay-1">
@@ -1816,9 +1816,14 @@
       <div class="detail-card reveal reveal-delay-2">
         <div class="detail-icon">◈</div>
         <p class="detail-label">Venue · 地点</p>
-        <p class="detail-value">天禄堂西溪庄园</p>
+        <p class="detail-value">天禄堂西溪庄园（暂定）</p>
         <p class="detail-sub">杭州余杭区</p>
-        <div id="venue-map" style="width:100%;height:160px;margin-top:16px;border-radius:2px;overflow:hidden;border:1px solid rgba(201,169,110,0.25);"></div>
+        <div id="venue-map" style="width:100%;height:160px;margin-top:16px;border-radius:2px;overflow:hidden;border:1px solid rgba(201,169,110,0.25);background:#1a1208;display:flex;align-items:center;justify-content:center;">
+          <div id="venue-map-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="opacity:0.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="#C9A96E"/></svg>
+            <span style="font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:0.2em;color:rgba(201,169,110,0.5);">地图加载中</span>
+          </div>
+        </div>
         <style>#venue-map .amap-logo, #venue-map .amap-copyright { display: none !important; }</style>
       </div>
 
@@ -1886,8 +1891,8 @@
 
     <div class="closing-date-badge reveal reveal-delay-3">
       <span class="badge-top">Save The Date</span>
-      <span class="badge-day">24</span>
-      <span class="badge-bottom">October · 2026</span>
+      <span class="badge-day">1</span>
+      <span class="badge-bottom">November · 2026</span>
     </div>
 
     <div class="ornament reveal reveal-delay-4" style="margin-top:48px">
@@ -3016,9 +3021,16 @@
     var loaded = false;
 
     var VENUE     = [120.0614, 30.2865];
-    var VENUE_NAME = '天禄堂西溪庄园';
+    var VENUE_NAME = '天禄堂西溪庄园（暂定）';
     var VENUE_LAT  = VENUE[1];
     var VENUE_LNG  = VENUE[0];
+
+    // ── 高德地图 H5 fallback（微信内 JSSDK 不可用时，及所有环境通用） ──
+    function openNavAmapH5() {
+      window.location.href =
+        'https://uri.amap.com/marker?position=' + VENUE_LNG + ',' + VENUE_LAT +
+        '&name=' + encodeURIComponent(VENUE_NAME) + '&src=engagement&coordinate=gaode&callnative=1';
+    }
 
     // ── 跳转导航（点击地图触发） ──
     function openNav() {
@@ -3028,12 +3040,42 @@
       var isAndroid = /Android/i.test(ua);
 
       if (isWeixin) {
-        // 微信内：腾讯地图 H5（唯一可靠方式）
-        window.location.href =
-          'https://apis.map.qq.com/uri/v1/marker' +
-          '?marker=coord:' + VENUE_LAT + ',' + VENUE_LNG +
-          ';title:' + encodeURIComponent(VENUE_NAME) +
-          '&referer=engagement';
+        // 微信内：优先使用 JSSDK wx.openLocation（gcj02 火星坐标）
+        // 参考：https://developers.weixin.qq.com/doc/subscription/guide/h5/jssdk.html#地理位置
+        if (typeof wx !== 'undefined' && typeof wx.openLocation === 'function') {
+          wx.openLocation({
+            latitude:  VENUE_LAT,
+            longitude: VENUE_LNG,
+            name:      VENUE_NAME,
+            address:   VENUE_NAME,
+            scale:     15
+          });
+        } else {
+          // JSSDK 未就绪时加载 SDK 并调用，兜底高德 H5
+          var sdkScript = document.getElementById('wx-jssdk');
+          if (!sdkScript) {
+            sdkScript = document.createElement('script');
+            sdkScript.id  = 'wx-jssdk';
+            sdkScript.src = 'https://res.wx.qq.com/open/js/jweixin-1.6.0.js';
+            sdkScript.onload = function() {
+              if (typeof wx !== 'undefined' && typeof wx.openLocation === 'function') {
+                wx.openLocation({
+                  latitude:  VENUE_LAT,
+                  longitude: VENUE_LNG,
+                  name:      VENUE_NAME,
+                  address:   VENUE_NAME,
+                  scale:     15
+                });
+              } else {
+                openNavAmapH5();
+              }
+            };
+            sdkScript.onerror = openNavAmapH5;
+            document.head.appendChild(sdkScript);
+          } else {
+            openNavAmapH5();
+          }
+        }
       } else if (isIOS) {
         // iOS：先尝试高德 App scheme，1.5s 后 fallback 到高德 H5
         var t = setTimeout(function() {
@@ -3093,6 +3135,10 @@
           }).then(function(AMap) {
             AMap.getConfig().appname = 'amap-jsapi-skill';
 
+            // 移除加载占位
+            var ph = document.getElementById('venue-map-placeholder');
+            if (ph) ph.remove();
+
             var map = new AMap.Map('venue-map', {
               viewMode: '2D',
               zoom: 15,
@@ -3145,7 +3191,7 @@
         };
         document.head.appendChild(script);
       });
-    }, { threshold: 0.3 });
+    }, { threshold: 0, rootMargin: '0px 0px 400px 0px' });
 
     obs.observe(mapEl);
   })();
