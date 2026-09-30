@@ -1931,30 +1931,7 @@
     }, { passive: true });
   })();
 
-  // ── 全屏请求：首次交互后请求全屏，消除底部安全区干扰 ──
-  (function initFullscreen() {
-    var isWeixin = /MicroMessenger/i.test(navigator.userAgent);
-    if (isWeixin) return; // 微信内不支持 Fullscreen API，跳过
 
-    var requested = false;
-    function requestFS() {
-      if (requested) return;
-      var el = document.documentElement;
-      var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
-      if (!fn) return;
-      requested = true;
-      fn.call(el).catch(function() { requested = false; });
-    }
-
-    // 首次任意触摸/点击后请求全屏
-    function onFirstInteract() {
-      requestFS();
-      document.removeEventListener('touchstart', onFirstInteract);
-      document.removeEventListener('pointerdown', onFirstInteract);
-    }
-    document.addEventListener('touchstart', onFirstInteract, { once: true, passive: true });
-    document.addEventListener('pointerdown', onFirstInteract, { once: true, passive: true });
-  })();
 
   // ── Loading ──
   window.addEventListener('load', () => {
