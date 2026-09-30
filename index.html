@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>我们订婚了 · Wedding Proposal</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+SC:wght@300;400&display=swap');
@@ -77,6 +77,7 @@
     /* ── Global Section Base ── */
     .section {
       min-height: 100svh;
+      min-height: var(--vh100, 100svh); /* JS 锁定初始高度后覆盖 */
       position: relative;
       overflow: hidden;
       display: flex;
@@ -1814,11 +1815,13 @@
         <p class="detail-label">Venue · 地点</p>
         <p class="detail-value">天禄堂西溪庄园（暂定）</p>
         <p class="detail-sub">杭州余杭区</p>
-        <div id="venue-map" style="width:100%;height:160px;margin-top:16px;border-radius:2px;overflow:hidden;border:1px solid rgba(201,169,110,0.25);background:#1a1208;display:flex;align-items:center;justify-content:center;">
+        <div id="venue-map" style="width:100%;height:160px;margin-top:16px;border-radius:2px;overflow:hidden;border:1px solid rgba(201,169,110,0.25);background:#1a1208;display:flex;align-items:center;justify-content:center;position:relative;">
           <div id="venue-map-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="opacity:0.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="#C9A96E"/></svg>
             <span style="font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:0.2em;color:rgba(201,169,110,0.5);">地图加载中</span>
           </div>
+          <!-- 微信内透明可点击覆盖层，确保 touch 事件不被高德地图层吞掉 -->
+          <div id="venue-map-overlay" style="display:none;position:absolute;inset:0;z-index:9999;cursor:pointer;-webkit-tap-highlight-color:transparent;"></div>
         </div>
         <style>#venue-map .amap-logo, #venue-map .amap-copyright { display: none !important; }</style>
       </div>
@@ -1911,6 +1914,48 @@
 </div>
 
 <script>
+  // ── 视口高度锁定：消除移动端底部 bar 出现/隐藏导致的页面跳动 ──
+  // 在 JS 执行的第一时间（DOM 尚未渲染）就读取并锁定视口高度，
+  // 后续底部 bar 动态弹出不会再重算 --vh100。
+  (function lockVH() {
+    function setVH() {
+      var h = window.innerHeight;
+      document.documentElement.style.setProperty('--vh100', h + 'px');
+    }
+    setVH();
+    // resize 时重新计算一次（旋转屏幕等真实尺寸变化），但不频繁响应 bar 滑入/滑出
+    var resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(setVH, 200);
+    }, { passive: true });
+  })();
+
+  // ── 全屏请求：首次交互后请求全屏，消除底部安全区干扰 ──
+  (function initFullscreen() {
+    var isWeixin = /MicroMessenger/i.test(navigator.userAgent);
+    if (isWeixin) return; // 微信内不支持 Fullscreen API，跳过
+
+    var requested = false;
+    function requestFS() {
+      if (requested) return;
+      var el = document.documentElement;
+      var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+      if (!fn) return;
+      requested = true;
+      fn.call(el).catch(function() { requested = false; });
+    }
+
+    // 首次任意触摸/点击后请求全屏
+    function onFirstInteract() {
+      requestFS();
+      document.removeEventListener('touchstart', onFirstInteract);
+      document.removeEventListener('pointerdown', onFirstInteract);
+    }
+    document.addEventListener('touchstart', onFirstInteract, { once: true, passive: true });
+    document.addEventListener('pointerdown', onFirstInteract, { once: true, passive: true });
+  })();
+
   // ── Loading ──
   window.addEventListener('load', () => {
     setTimeout(() => {
@@ -3054,7 +3099,7 @@
     var VENUE_LAT  = VENUE[1];
     var VENUE_LNG  = VENUE[0];
 
-    // ── 高德地图 H5 fallback（微信内 JSSDK 不可用时，及所有环境通用） ──
+    // ── 高德地图 H5 通用跳转 ──
     function openNavAmapH5() {
       window.location.href =
         'https://uri.amap.com/marker?position=' + VENUE_LNG + ',' + VENUE_LAT +
@@ -3064,71 +3109,30 @@
     // ── 跳转导航（点击地图触发） ──
     function openNav() {
       var ua = navigator.userAgent;
-      var isWeixin = /MicroMessenger/i.test(ua);
-      var isIOS    = /iPhone|iPad|iPod/i.test(ua);
+      var isWeixin  = /MicroMessenger/i.test(ua);
+      var isIOS     = /iPhone|iPad|iPod/i.test(ua);
       var isAndroid = /Android/i.test(ua);
 
       if (isWeixin) {
-        // 微信内：优先使用 JSSDK wx.openLocation（gcj02 火星坐标）
-        // 参考：https://developers.weixin.qq.com/doc/subscription/guide/h5/jssdk.html#地理位置
-        if (typeof wx !== 'undefined' && typeof wx.openLocation === 'function') {
-          wx.openLocation({
-            latitude:  VENUE_LAT,
-            longitude: VENUE_LNG,
-            name:      VENUE_NAME,
-            address:   VENUE_NAME,
-            scale:     15
-          });
-        } else {
-          // JSSDK 未就绪时加载 SDK 并调用，兜底高德 H5
-          var sdkScript = document.getElementById('wx-jssdk');
-          if (!sdkScript) {
-            sdkScript = document.createElement('script');
-            sdkScript.id  = 'wx-jssdk';
-            sdkScript.src = 'https://res.wx.qq.com/open/js/jweixin-1.6.0.js';
-            sdkScript.onload = function() {
-              if (typeof wx !== 'undefined' && typeof wx.openLocation === 'function') {
-                wx.openLocation({
-                  latitude:  VENUE_LAT,
-                  longitude: VENUE_LNG,
-                  name:      VENUE_NAME,
-                  address:   VENUE_NAME,
-                  scale:     15
-                });
-              } else {
-                openNavAmapH5();
-              }
-            };
-            sdkScript.onerror = openNavAmapH5;
-            document.head.appendChild(sdkScript);
-          } else {
-            openNavAmapH5();
-          }
-        }
+        // 微信内无法使用 JSSDK（需后端签名），也无法唤起第三方 App
+        // 直接跳高德 H5，高德 H5 页面内有"用地图 App 打开"按钮
+        openNavAmapH5();
       } else if (isIOS) {
         // iOS：先尝试高德 App scheme，1.5s 后 fallback 到高德 H5
-        var t = setTimeout(function() {
-          window.location.href =
-            'https://uri.amap.com/marker?position=' + VENUE_LNG + ',' + VENUE_LAT +
-            '&name=' + encodeURIComponent(VENUE_NAME) + '&src=engagement&coordinate=gaode&callnative=1';
-        }, 1500);
+        var t = setTimeout(openNavAmapH5, 1500);
+        window.addEventListener('blur', function() { clearTimeout(t); }, { once: true });
         window.location.href =
           'iosamap://viewMap?sourceApplication=engagement' +
           '&poiname=' + encodeURIComponent(VENUE_NAME) +
           '&lat=' + VENUE_LAT + '&lon=' + VENUE_LNG + '&dev=0';
-        window.addEventListener('blur', function() { clearTimeout(t); }, { once: true });
       } else if (isAndroid) {
         // Android：高德 App scheme，fallback 到 H5
-        var t2 = setTimeout(function() {
-          window.location.href =
-            'https://uri.amap.com/marker?position=' + VENUE_LNG + ',' + VENUE_LAT +
-            '&name=' + encodeURIComponent(VENUE_NAME) + '&src=engagement&coordinate=gaode&callnative=1';
-        }, 1500);
+        var t2 = setTimeout(openNavAmapH5, 1500);
+        window.addEventListener('blur', function() { clearTimeout(t2); }, { once: true });
         window.location.href =
           'androidamap://viewMap?sourceApplication=engagement' +
           '&poiname=' + encodeURIComponent(VENUE_NAME) +
           '&lat=' + VENUE_LAT + '&lon=' + VENUE_LNG + '&dev=0';
-        window.addEventListener('blur', function() { clearTimeout(t2); }, { once: true });
       } else {
         // PC：高德网页版
         window.open(
@@ -3143,26 +3147,35 @@
     mapEl.style.cursor = 'pointer';
     mapEl.title = '点击导航至' + VENUE_NAME;
 
-    // 移动端用 touchend 替代 click，消除 300ms 延迟，同时防止地图层拦截
+    var isWeixin = /MicroMessenger/i.test(navigator.userAgent);
+    var overlayEl = document.getElementById('venue-map-overlay');
+
+    // 微信内：始终显示透明覆盖层，确保 touch 事件不被高德地图 canvas 层吞掉
+    if (isWeixin && overlayEl) {
+      overlayEl.style.display = 'block';
+    }
+
+    // 统一 tap 逻辑：挂在覆盖层（微信）或地图容器（其他）上
+    var tapTarget = (isWeixin && overlayEl) ? overlayEl : mapEl;
     var _tapStartX = 0, _tapStartY = 0, _tapMoved = false;
-    mapEl.addEventListener('touchstart', function(e) {
+    tapTarget.addEventListener('touchstart', function(e) {
       _tapStartX = e.touches[0].clientX;
       _tapStartY = e.touches[0].clientY;
       _tapMoved = false;
     }, { passive: true });
-    mapEl.addEventListener('touchmove', function(e) {
+    tapTarget.addEventListener('touchmove', function(e) {
       var dx = Math.abs(e.touches[0].clientX - _tapStartX);
       var dy = Math.abs(e.touches[0].clientY - _tapStartY);
       if (dx > 8 || dy > 8) _tapMoved = true;
     }, { passive: true });
-    mapEl.addEventListener('touchend', function(e) {
+    tapTarget.addEventListener('touchend', function(e) {
       if (!_tapMoved) {
-        e.preventDefault(); // 阻止后续 click，避免重复触发
+        e.preventDefault();
         openNav();
       }
     }, { passive: false });
     // PC fallback
-    mapEl.addEventListener('click', function(e) {
+    tapTarget.addEventListener('click', function() {
       if (!('ontouchstart' in window)) openNav();
     });
 
