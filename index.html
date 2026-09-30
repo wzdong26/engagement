@@ -37,6 +37,7 @@
       font-family: var(--serif-cn);
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
     }
 
     /* ── Loading Screen ── */
@@ -112,10 +113,12 @@
       transform: translateY(40px);
       transition: opacity 0.9s cubic-bezier(0.22,1,0.36,1),
                   transform 0.9s cubic-bezier(0.22,1,0.36,1);
+      will-change: transform, opacity;
     }
     .reveal.visible {
       opacity: 1;
       transform: translateY(0);
+      will-change: auto;
     }
     .reveal-delay-1 { transition-delay: 0.15s; }
     .reveal-delay-2 { transition-delay: 0.30s; }
@@ -647,7 +650,10 @@
       position: relative;
       width: 100%;
       overflow: hidden;
-      touch-action: pan-y pinch-zoom;
+      touch-action: pan-y pinch-zoom;  /* 默认允许纵向滚动 */
+    }
+    .gallery-carousel.dragging-x {
+      touch-action: none;  /* 确认横向意图后锁定 */
     }
     .gallery-track {
       display: flex;
@@ -1973,47 +1979,73 @@
     nextBtn.addEventListener('click', function() { resetAuto(); goTo(current + 1); });
 
     // ── 触摸 / 鼠标拖拽 ──
+    var carousel  = document.getElementById('galleryCarousel');
     var dragStartX = 0;
+    var dragStartY = 0;
     var dragStartOffset = 0;
-    var dragging = false;
-    var moved = false;   // 是否真的移动过（用于区分 click vs drag）
+    var dragging  = false;  // 已确认横向拖拽
+    var pending   = false;  // 按下但方向未定
+    var moved     = false;  // 用于区分 click vs drag
 
-    function onDragStart(clientX) {
-      dragging = true;
-      moved = false;
-      dragStartX = clientX;
-      dragStartOffset = -getOffset(current);
-      track.style.transition = 'none';
-    }
-    function onDragMove(clientX) {
-      if (!dragging) return;
-      var dx = clientX - dragStartX;
-      if (Math.abs(dx) > 4) moved = true;
-      track.style.transform = 'translateX(' + (dragStartOffset + dx) + 'px)';
-    }
-    function onDragEnd(clientX) {
-      if (!dragging) return;
+    function cancelDrag() {
+      pending  = false;
       dragging = false;
-      var dx = clientX - dragStartX;
+      carousel.classList.remove('dragging-x');
       track.style.transition = 'transform 0.45s cubic-bezier(0.22,1,0.36,1)';
-      if (dx < -40)      { resetAuto(); goTo(current + 1); }
-      else if (dx > 40)  { resetAuto(); goTo(current - 1); }
-      else               { track.style.transform = 'translateX(' + (-getOffset(current)) + 'px)'; }
+      track.style.transform  = 'translateX(' + (-getOffset(current)) + 'px)';
     }
 
-    // Pointer events（PC + 部分 Android）
     track.addEventListener('pointerdown', function(e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      track.setPointerCapture(e.pointerId);
-      onDragStart(e.clientX);
+      pending      = true;
+      dragging     = false;
+      moved        = false;
+      dragStartX   = e.clientX;
+      dragStartY   = e.clientY;
+      dragStartOffset = -getOffset(current);
     });
-    track.addEventListener('pointermove', function(e) { onDragMove(e.clientX); });
-    track.addEventListener('pointerup',   function(e) { onDragEnd(e.clientX); });
-    track.addEventListener('pointercancel', function() {
-      dragging = false;
-      track.style.transition = 'transform 0.45s cubic-bezier(0.22,1,0.36,1)';
-      track.style.transform = 'translateX(' + (-getOffset(current)) + 'px)';
+
+    track.addEventListener('pointermove', function(e) {
+      if (!pending && !dragging) return;
+      var dx = e.clientX - dragStartX;
+      var dy = e.clientY - dragStartY;
+
+      if (pending) {
+        // 方向未定：需要移动 ≥6px 才判断
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        if (Math.abs(dy) > Math.abs(dx)) {
+          // 纵向意图 → 放弃捕获，让浏览器处理滚动
+          pending = false;
+          return;
+        }
+        // 横向意图 → 接管
+        pending  = false;
+        dragging = true;
+        carousel.classList.add('dragging-x');
+        track.setPointerCapture(e.pointerId);
+        track.style.transition = 'none';
+      }
+
+      if (!dragging) return;
+      moved = true;
+      track.style.transform = 'translateX(' + (dragStartOffset + dx) + 'px)';
     });
+
+    function onPointerEnd(e) {
+      if (dragging) {
+        var dx = e.clientX - dragStartX;
+        dragging = false;
+        carousel.classList.remove('dragging-x');
+        track.style.transition = 'transform 0.45s cubic-bezier(0.22,1,0.36,1)';
+        if (dx < -40)     { resetAuto(); goTo(current + 1); }
+        else if (dx > 40) { resetAuto(); goTo(current - 1); }
+        else              { track.style.transform = 'translateX(' + (-getOffset(current)) + 'px)'; }
+      }
+      pending = false;
+    }
+
+    track.addEventListener('pointerup',     onPointerEnd);
+    track.addEventListener('pointercancel', cancelDrag);
 
     // 点击打开灯箱（未拖拽时）
     slides.forEach(function(slide, i) {
