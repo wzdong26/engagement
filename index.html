@@ -76,8 +76,7 @@
 
     /* ── Global Section Base ── */
     .section {
-      min-height: 100svh;
-      min-height: var(--vh100, 100svh); /* JS 锁定初始高度后覆盖 */
+      min-height: var(--vh100, 100vh);
       position: relative;
       overflow: hidden;
       display: flex;
@@ -1915,19 +1914,17 @@
 
 <script>
   // ── 视口高度锁定：消除移动端底部 bar 出现/隐藏导致的页面跳动 ──
-  // 在 JS 执行的第一时间（DOM 尚未渲染）就读取并锁定视口高度，
-  // 后续底部 bar 动态弹出不会再重算 --vh100。
+  // 只在页面首次加载时读取一次 innerHeight 并写死，之后 resize 不更新。
+  // 屏幕旋转时（宽高比反转）才重新计算。
   (function lockVH() {
-    function setVH() {
-      var h = window.innerHeight;
-      document.documentElement.style.setProperty('--vh100', h + 'px');
-    }
-    setVH();
-    // resize 时重新计算一次（旋转屏幕等真实尺寸变化），但不频繁响应 bar 滑入/滑出
-    var resizeTimer;
+    var initW = window.innerWidth;
+    document.documentElement.style.setProperty('--vh100', window.innerHeight + 'px');
     window.addEventListener('resize', function() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(setVH, 200);
+      // 宽度变化 = 旋转，才重新计算；高度变化 = 底部 bar，忽略
+      if (window.innerWidth !== initW) {
+        initW = window.innerWidth;
+        document.documentElement.style.setProperty('--vh100', window.innerHeight + 'px');
+      }
     }, { passive: true });
   })();
 
