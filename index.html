@@ -790,10 +790,6 @@
       position: relative;
       width: 100%;
       overflow: hidden;
-      touch-action: pan-y pinch-zoom;  /* 默认允许纵向滚动 */
-    }
-    .gallery-carousel.dragging-x {
-      touch-action: none;  /* 确认横向意图后锁定 */
     }
     .gallery-track {
       display: flex;
@@ -2378,60 +2374,88 @@
     prevBtn.addEventListener('click', function() { resetAuto(); goTo(current - 1); });
     nextBtn.addEventListener('click', function() { resetAuto(); goTo(current + 1); });
 
-    // ── 触摸 / 鼠标拖拽 ──
+    // ── 触摸滑动（touch） / 鼠标拖拽（pointer） ──
+    // 触摸：用原生 touch 事件，在确认横向意图前不阻止默认滚动，避免 iOS 上下弹跳
+    // 鼠标：保留 pointer 事件
     var carousel  = document.getElementById('galleryCarousel');
     var dragStartX = 0;
     var dragStartY = 0;
     var dragStartOffset = 0;
-    var dragging  = false;  // 已确认横向拖拽
-    var pending   = false;  // 按下但方向未定
-    var moved     = false;  // 用于区分 click vs drag
+    var dragging  = false;
+    var moved     = false;
 
-    function cancelDrag() {
-      pending  = false;
+    // ── Touch 事件（移动端）──
+    track.addEventListener('touchstart', function(e) {
+      dragging = false;
+      moved    = false;
+      dragStartX      = e.touches[0].clientX;
+      dragStartY      = e.touches[0].clientY;
+      dragStartOffset = -getOffset(current);
+    }, { passive: true });
+
+    track.addEventListener('touchmove', function(e) {
+      var dx = e.touches[0].clientX - dragStartX;
+      var dy = e.touches[0].clientY - dragStartY;
+
+      if (!dragging) {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        if (Math.abs(dy) > Math.abs(dx)) return; // 纵向 → 交给浏览器滚动
+        // 确认横向 → 接管
+        dragging = true;
+        carousel.classList.add('dragging-x');
+        track.style.transition = 'none';
+      }
+
+      e.preventDefault(); // 只在确认横向后才阻止滚动
+      moved = true;
+      track.style.transform = 'translateX(' + (dragStartOffset + dx) + 'px)';
+    }, { passive: false });
+
+    track.addEventListener('touchend', function(e) {
+      if (dragging) {
+        var dx = e.changedTouches[0].clientX - dragStartX;
+        dragging = false;
+        carousel.classList.remove('dragging-x');
+        track.style.transition = 'transform 0.45s cubic-bezier(0.22,1,0.36,1)';
+        if (dx < -40)     { resetAuto(); goTo(current + 1); }
+        else if (dx > 40) { resetAuto(); goTo(current - 1); }
+        else              { track.style.transform = 'translateX(' + (-getOffset(current)) + 'px)'; }
+      }
+    }, { passive: true });
+
+    track.addEventListener('touchcancel', function() {
       dragging = false;
       carousel.classList.remove('dragging-x');
       track.style.transition = 'transform 0.45s cubic-bezier(0.22,1,0.36,1)';
       track.style.transform  = 'translateX(' + (-getOffset(current)) + 'px)';
-    }
+    }, { passive: true });
 
+    // ── Pointer 事件（鼠标）──
+    var mouseDown = false;
     track.addEventListener('pointerdown', function(e) {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      pending      = true;
-      dragging     = false;
-      moved        = false;
-      dragStartX   = e.clientX;
-      dragStartY   = e.clientY;
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      mouseDown = true;
+      moved     = false;
+      dragging  = false;
+      dragStartX      = e.clientX;
+      dragStartY      = e.clientY;
       dragStartOffset = -getOffset(current);
+      track.setPointerCapture(e.pointerId);
+      track.style.transition = 'none';
     });
 
     track.addEventListener('pointermove', function(e) {
-      if (!pending && !dragging) return;
+      if (!mouseDown || e.pointerType !== 'mouse') return;
       var dx = e.clientX - dragStartX;
-      var dy = e.clientY - dragStartY;
-
-      if (pending) {
-        // 方向未定：需要移动 ≥6px 才判断
-        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-        if (Math.abs(dy) > Math.abs(dx)) {
-          // 纵向意图 → 放弃捕获，让浏览器处理滚动
-          pending = false;
-          return;
-        }
-        // 横向意图 → 接管
-        pending  = false;
-        dragging = true;
-        carousel.classList.add('dragging-x');
-        track.setPointerCapture(e.pointerId);
-        track.style.transition = 'none';
-      }
-
+      if (!dragging && Math.abs(dx) >= 4) { dragging = true; carousel.classList.add('dragging-x'); }
       if (!dragging) return;
       moved = true;
       track.style.transform = 'translateX(' + (dragStartOffset + dx) + 'px)';
     });
 
-    function onPointerEnd(e) {
+    track.addEventListener('pointerup', function(e) {
+      if (!mouseDown || e.pointerType !== 'mouse') return;
+      mouseDown = false;
       if (dragging) {
         var dx = e.clientX - dragStartX;
         dragging = false;
@@ -2441,11 +2465,16 @@
         else if (dx > 40) { resetAuto(); goTo(current - 1); }
         else              { track.style.transform = 'translateX(' + (-getOffset(current)) + 'px)'; }
       }
-      pending = false;
-    }
+    });
 
-    track.addEventListener('pointerup',     onPointerEnd);
-    track.addEventListener('pointercancel', cancelDrag);
+    track.addEventListener('pointercancel', function(e) {
+      if (e.pointerType !== 'mouse') return;
+      mouseDown = false;
+      dragging  = false;
+      carousel.classList.remove('dragging-x');
+      track.style.transition = 'transform 0.45s cubic-bezier(0.22,1,0.36,1)';
+      track.style.transform  = 'translateX(' + (-getOffset(current)) + 'px)';
+    });
 
     // 点击打开灯箱（未拖拽时）
     slides.forEach(function(slide, i) {
@@ -3113,7 +3142,29 @@
     // 给地图容器加点击提示样式
     mapEl.style.cursor = 'pointer';
     mapEl.title = '点击导航至' + VENUE_NAME;
-    mapEl.addEventListener('click', openNav);
+
+    // 移动端用 touchend 替代 click，消除 300ms 延迟，同时防止地图层拦截
+    var _tapStartX = 0, _tapStartY = 0, _tapMoved = false;
+    mapEl.addEventListener('touchstart', function(e) {
+      _tapStartX = e.touches[0].clientX;
+      _tapStartY = e.touches[0].clientY;
+      _tapMoved = false;
+    }, { passive: true });
+    mapEl.addEventListener('touchmove', function(e) {
+      var dx = Math.abs(e.touches[0].clientX - _tapStartX);
+      var dy = Math.abs(e.touches[0].clientY - _tapStartY);
+      if (dx > 8 || dy > 8) _tapMoved = true;
+    }, { passive: true });
+    mapEl.addEventListener('touchend', function(e) {
+      if (!_tapMoved) {
+        e.preventDefault(); // 阻止后续 click，避免重复触发
+        openNav();
+      }
+    }, { passive: false });
+    // PC fallback
+    mapEl.addEventListener('click', function(e) {
+      if (!('ontouchstart' in window)) openNav();
+    });
 
     var obs = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
