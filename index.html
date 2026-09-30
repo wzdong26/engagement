@@ -191,7 +191,7 @@
       font-size: clamp(54px, 15vw, 84px);
       font-weight: 300;
       font-style: normal;
-      color: var(--white);
+      color: var(--gold-pale);
       line-height: 1.15;
       margin-bottom: 12px;
       letter-spacing: 0.28em;
@@ -491,24 +491,164 @@
        SECTION 6 · COUPLE PHOTO
     ════════════════════════════════ */
     #photo-couple {
-      background: var(--cream);
+      background: radial-gradient(ellipse 120% 80% at 50% 40%, #fdf6ec 0%, #f5e8d0 55%, #ede0c4 100%);
       padding: 80px 32px;
+      overflow: hidden;
     }
+
+    /* 背景散景光圈 */
+    #photo-couple::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,169,110,0.18) 0%, transparent 70%);
+      top: -100px; left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      animation: bokeh-drift 8s ease-in-out infinite alternate;
+    }
+    #photo-couple::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,220,180,0.22) 0%, transparent 70%);
+      bottom: 40px; right: -60px;
+      pointer-events: none;
+      animation: bokeh-drift 11s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes bokeh-drift {
+      from { transform: translateX(-50%) scale(1);   opacity: 0.7; }
+      to   { transform: translateX(-50%) scale(1.25); opacity: 1;   }
+    }
+
     .couple-frame {
       width: 100%;
       max-width: 420px;
-      aspect-ratio: 1/1;
+      aspect-ratio: 3/4;
       max-height: 80vw;
       background: #D8CEC0;
       position: relative;
       overflow: hidden;
+      box-shadow:
+        0 2px 0 rgba(201,169,110,0.6),
+        0 -2px 0 rgba(201,169,110,0.6),
+        0 32px 64px rgba(90,60,20,0.22),
+        0 8px 24px rgba(90,60,20,0.12);
     }
+    /* 双内框 */
     .couple-frame::before {
       content: '';
       position: absolute;
-      inset: 14px;
-      border: 1px solid rgba(201,169,110,0.5);
+      inset: 10px;
+      border: 1px solid rgba(201,169,110,0.55);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .couple-frame::after {
+      content: '';
+      position: absolute;
+      inset: 16px;
+      border: 1px solid rgba(201,169,110,0.2);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* ── 照片框四角花叶 ── */
+    .couple-corner-decor {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .couple-corner-decor .corner {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+    }
+    .couple-corner-decor .corner.tl { top: 0;    left: 0; }
+    .couple-corner-decor .corner.tr { top: 0;    right: 0; transform: scaleX(-1); }
+    .couple-corner-decor .corner.bl { bottom: 0; left: 0;  transform: scaleY(-1); }
+    .couple-corner-decor .corner.br { bottom: 0; right: 0; transform: scale(-1); }
+
+    /* ── 漂浮玫瑰花瓣（CSS only） ── */
+    .couple-rose-petals {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
       z-index: 1;
+      overflow: hidden;
+    }
+    .rose-petal {
+      position: absolute;
+      top: -30px;
+      opacity: 0;
+      animation: rose-fall linear infinite;
+      will-change: transform, opacity;
+    }
+    @keyframes rose-fall {
+      0%   { transform: translateY(0) rotate(0deg) translateX(0);   opacity: 0;   }
+      8%   { opacity: 0.85; }
+      85%  { opacity: 0.4; }
+      100% { transform: translateY(110vh) rotate(540deg) translateX(30px); opacity: 0; }
+    }
+
+    /* ── 金色星尘粒子（CSS only） ── */
+    .couple-stardust {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .stardust-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, #E8D5A8 0%, rgba(201,169,110,0.3) 60%, transparent 100%);
+      animation: stardust-twinkle ease-in-out infinite alternate;
+      will-change: opacity, transform;
+    }
+    @keyframes stardust-twinkle {
+      from { opacity: 0.1; transform: scale(0.6); }
+      to   { opacity: 0.9; transform: scale(1.3); }
+    }
+
+    /* ── 文字区 ── */
+    .couple-caption-wrap {
+      position: relative;
+      z-index: 4;
+      text-align: center;
+      margin-top: 32px;
+    }
+    .couple-caption-title {
+      font-family: var(--serif-en);
+      font-size: 28px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--ink);
+      letter-spacing: 0.12em;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+    .couple-caption-cn {
+      font-family: var(--serif-cn);
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--gold);
+      letter-spacing: 0.45em;
+    }
+    .couple-date-tag {
+      display: inline-block;
+      margin-top: 16px;
+      font-family: var(--serif-en);
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      border-top: 1px solid rgba(201,169,110,0.35);
+      border-bottom: 1px solid rgba(201,169,110,0.35);
+      padding: 6px 20px;
     }
 
     /* ════════════════════════════════
@@ -636,8 +776,8 @@
        SECTION 9 · GALLERY CAROUSEL
     ════════════════════════════════ */
     #gallery {
-      background: var(--cream);
-      padding: 80px 0;
+      background: linear-gradient(180deg, var(--cream) 0%, #f0e8d8 100%);
+      padding: 80px 0 60px;
     }
     .gallery-header {
       text-align: center;
@@ -664,9 +804,8 @@
       flex-shrink: 0;
       width: 75vw;
       max-width: 320px;
-      height: calc(75vw * 4/3);
-      max-height: 427px;
-      background: #1a1410;
+      height: min(70vh, 480px);
+      background: #0d0b09;
       position: relative;
       overflow: hidden;
       margin: 0 8px;
@@ -675,6 +814,7 @@
       opacity: 0.55;
       transform: scale(0.92);
       cursor: zoom-in;
+      border-radius: 2px;
     }
     .gallery-slide.active {
       opacity: 1;
@@ -695,6 +835,22 @@
       height: 100%;
       object-fit: contain;
       object-position: center;
+    }
+    /* 轮播入场：动画期间隐藏 slides */
+    #gallery.gallery-anim-pending .gallery-slide {
+      opacity: 0 !important;
+      transform: scale(0.05) !important;
+    }
+    /* gallery 允许 canvas 溢出显示 */
+    #gallery {
+      overflow: visible;
+    }
+    /* 粒子 canvas：absolute 定位在 gallery 内，覆盖整个 gallery 高度 */
+    #gallery-particle-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 500;
     }
 
     /* ── 灯箱 Lightbox ── */
@@ -948,10 +1104,9 @@
 
       /* 轮播 slide 高度适配，保留完整人物 */
       .gallery-slide {
-        width: 80vw;
-        max-width: 280px;
-        height: calc(80vw * 5 / 4);
-        max-height: 60vh;
+        width: 82vw;
+        max-width: 300px;
+        height: min(65vh, 420px);
       }
 
       /* 轮播箭头加大 tap 区域 */
@@ -1127,6 +1282,51 @@
       100% { opacity: 1; transform: rotateX(0deg)  translateZ(0px); }
     }
 
+    /* ── 手写名字 HanziWriter 布局 ── */
+    .cover-hanzi-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    .cover-hanzi-name {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .hanzi-char-wrap {
+      flex-shrink: 0;
+    }
+    .hanzi-amp {
+      font-family: var(--serif-en);
+      font-size: clamp(28px, 8vw, 48px);
+      color: var(--gold);
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1;
+      padding: 4px 0;
+      opacity: 0;
+      animation: amp-appear 0.8s ease 0.3s forwards;
+    }
+    @keyframes amp-appear {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+      font-style: italic;
+      font-weight: 300;
+      padding: 0 6px;
+      line-height: 1;
+      align-self: center;
+      opacity: 0;
+      animation: amp-appear 0.8s ease 0.3s forwards;
+    }
+    @keyframes amp-appear {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
     /* ── Timeline Dot 3D Hover ── */
     .timeline-dot {
       transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease;
@@ -1214,7 +1414,85 @@
     .particle.p3d {
       animation-name: float-up-3d;
     }
+    @keyframes venue-ping {
+      0%   { transform: scale(0.8); opacity: 0.8; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    /* ── 音乐按钮 ── */
+    #music-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9998;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(201,169,110,0.15);
+      border: 1px solid rgba(201,169,110,0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      overflow: visible;
+    }
+    #music-btn:hover {
+      background: rgba(201,169,110,0.28);
+      border-color: rgba(201,169,110,0.8);
+      transform: scale(1.08);
+    }
+
+    /* 音符图标容器：播放时旋转 */
+    #music-btn .music-icon {
+      width: 18px;
+      height: 18px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    #music-btn:not(.muted) .music-icon {
+      animation: note-spin 4s linear infinite;
+    }
+    @keyframes note-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* 静音时斜线 */
+    #music-btn .mute-slash {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2px;
+      height: 26px;
+      background: #C9A96E;
+      transform: translate(-50%, -50%) rotate(45deg);
+      border-radius: 1px;
+      pointer-events: none;
+    }
+    #music-btn.muted .mute-slash { display: block; }
+    #music-btn.muted .music-icon svg { opacity: 0.45; }
+
+    /* 播放中外圈光晕 */
+    #music-btn:not(.muted)::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,169,110,0.3);
+      animation: music-ring 2s ease-out infinite;
+    }
+    @keyframes music-ring {
+      0%   { transform: scale(1);   opacity: 0.6; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 </head>
 <body>
 
@@ -1223,6 +1501,21 @@
   <div class="loading-ring"></div>
   <p class="loading-text">Loading</p>
 </div>
+
+<!-- 音乐控制按钮：初始静音状态，自动播放成功后切换 -->
+<button id="music-btn" class="muted" aria-label="播放" title="背景音乐">
+  <div class="music-icon">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+      <path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="mute-slash"></div>
+</button>
+
+<!-- 背景音乐 -->
+<audio id="bg-music" loop preload="auto">
+  <source src="music/这是我一生中最勇敢的瞬间 - 棱镜乐队.mp3" type="audio/mpeg">
+</audio>
 
 <!-- ══════════ SECTION 1 · COVER ══════════ -->
 <section id="cover" class="section">
@@ -1240,9 +1533,18 @@
     </div>
 
     <div class="reveal reveal-delay-2 cover-names-3d">
-      <div class="cover-names" style="animation-delay:0.4s">王志东</div>
-      <div class="cover-names cover-ampersand" style="animation-delay:0.7s">&</div>
-      <div class="cover-names" style="animation-delay:1.0s">王茜</div>
+      <div class="cover-hanzi-row">
+        <div class="cover-hanzi-name">
+          <div id="hanzi-wang1" class="hanzi-char-wrap"></div>
+          <div id="hanzi-zhi"   class="hanzi-char-wrap"></div>
+          <div id="hanzi-dong"  class="hanzi-char-wrap"></div>
+        </div>
+        <div class="hanzi-amp">&</div>
+        <div class="cover-hanzi-name">
+          <div id="hanzi-wang2" class="hanzi-char-wrap"></div>
+          <div id="hanzi-xi"    class="hanzi-char-wrap"></div>
+        </div>
+      </div>
     </div>
 
     <div class="cover-date-line reveal reveal-delay-3">
@@ -1372,10 +1674,88 @@
 
 <!-- ══════════ SECTION 6 · COUPLE PHOTO ══════════ -->
 <section id="photo-couple" class="section">
-  <div class="couple-frame reveal" style="position:relative">
-    <img src="photos/1790686295985.jpg" alt="合照" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;">
+  <canvas id="couple-petals-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+
+  <!-- CSS 玫瑰花瓣雨 -->
+  <div class="couple-rose-petals" id="couple-rose-petals"></div>
+
+  <!-- CSS 星尘粒子 -->
+  <div class="couple-stardust" id="couple-stardust"></div>
+
+  <!-- 上方标签 -->
+  <div class="reveal" style="position:relative;z-index:4;text-align:center;margin-bottom:20px;">
+    <p style="font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:0.5em;color:var(--gold);text-transform:uppercase;">Our Portrait</p>
+    <div class="ornament" style="max-width:200px;margin:12px auto 0;"><div class="ornament-diamond"></div></div>
   </div>
-  <p style="margin-top:24px; font-family:'Cormorant Garamond',serif; font-size:13px; letter-spacing:0.3em; color:var(--gold); text-transform:uppercase;" class="reveal reveal-delay-1">Together Forever</p>
+
+  <!-- 照片框 + 四角装饰 -->
+  <div style="position:relative;z-index:4;width:100%;max-width:420px;">
+    <!-- 四角花叶 SVG（绝对定位，覆盖在框外） -->
+    <div class="couple-corner-decor" aria-hidden="true">
+      <!-- 左上 -->
+      <svg class="corner tl" viewBox="0 0 72 72" fill="none">
+        <path d="M2 2 C2 2 2 28 2 36" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <path d="M2 2 C2 2 28 2 36 2" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <circle cx="2" cy="2" r="2.5" fill="#C9A96E" opacity="0.9"/>
+        <!-- 小花 -->
+        <circle cx="14" cy="2" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="2" cy="14" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="26" cy="2" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <circle cx="2" cy="26" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <!-- 曲线叶 -->
+        <path d="M2 20 Q14 8 20 2" stroke="#C9A96E" stroke-width="0.7" opacity="0.4" fill="none"/>
+        <path d="M2 32 Q20 20 32 2" stroke="#C9A96E" stroke-width="0.5" opacity="0.25" fill="none" stroke-dasharray="2 3"/>
+      </svg>
+      <!-- 右上（水平翻转） -->
+      <svg class="corner tr" viewBox="0 0 72 72" fill="none">
+        <path d="M70 2 C70 2 70 28 70 36" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <path d="M70 2 C70 2 44 2 36 2" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <circle cx="70" cy="2" r="2.5" fill="#C9A96E" opacity="0.9"/>
+        <circle cx="58" cy="2" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="70" cy="14" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="46" cy="2" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <circle cx="70" cy="26" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <path d="M70 20 Q58 8 52 2" stroke="#C9A96E" stroke-width="0.7" opacity="0.4" fill="none"/>
+        <path d="M70 32 Q52 20 40 2" stroke="#C9A96E" stroke-width="0.5" opacity="0.25" fill="none" stroke-dasharray="2 3"/>
+      </svg>
+      <!-- 左下 -->
+      <svg class="corner bl" viewBox="0 0 72 72" fill="none">
+        <path d="M2 70 C2 70 2 44 2 36" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <path d="M2 70 C2 70 28 70 36 70" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <circle cx="2" cy="70" r="2.5" fill="#C9A96E" opacity="0.9"/>
+        <circle cx="14" cy="70" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="2" cy="58" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="26" cy="70" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <circle cx="2" cy="46" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <path d="M2 52 Q14 64 20 70" stroke="#C9A96E" stroke-width="0.7" opacity="0.4" fill="none"/>
+        <path d="M2 40 Q20 52 32 70" stroke="#C9A96E" stroke-width="0.5" opacity="0.25" fill="none" stroke-dasharray="2 3"/>
+      </svg>
+      <!-- 右下 -->
+      <svg class="corner br" viewBox="0 0 72 72" fill="none">
+        <path d="M70 70 C70 70 70 44 70 36" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <path d="M70 70 C70 70 44 70 36 70" stroke="#C9A96E" stroke-width="1" opacity="0.7"/>
+        <circle cx="70" cy="70" r="2.5" fill="#C9A96E" opacity="0.9"/>
+        <circle cx="58" cy="70" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="70" cy="58" r="1.2" fill="#C9A96E" opacity="0.5"/>
+        <circle cx="46" cy="70" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <circle cx="70" cy="46" r="0.8" fill="#C9A96E" opacity="0.35"/>
+        <path d="M70 52 Q58 64 52 70" stroke="#C9A96E" stroke-width="0.7" opacity="0.4" fill="none"/>
+        <path d="M70 40 Q52 52 40 70" stroke="#C9A96E" stroke-width="0.5" opacity="0.25" fill="none" stroke-dasharray="2 3"/>
+      </svg>
+    </div>
+
+    <div class="couple-frame reveal">
+      <img src="photos/1790686295985.jpg" alt="合照" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;">
+    </div>
+  </div>
+
+  <!-- 文字区 -->
+  <div class="couple-caption-wrap reveal reveal-delay-1">
+    <div class="ornament" style="max-width:220px;margin:0 auto 18px;"><div class="ornament-diamond"></div></div>
+    <h3 class="couple-caption-title">Together Forever</h3>
+    <p class="couple-caption-cn">执子之手 · 与子偕老</p>
+    <span class="couple-date-tag">October 24 · 2026</span>
+  </div>
 </section>
 
 <!-- ══════════ SECTION 7 · VOWS ══════════ -->
@@ -1438,6 +1818,8 @@
         <p class="detail-label">Venue · 地点</p>
         <p class="detail-value">天禄堂西溪庄园</p>
         <p class="detail-sub">杭州余杭区</p>
+        <div id="venue-map" style="width:100%;height:160px;margin-top:16px;border-radius:2px;overflow:hidden;border:1px solid rgba(201,169,110,0.25);"></div>
+        <style>#venue-map .amap-logo, #venue-map .amap-copyright { display: none !important; }</style>
       </div>
 
     </div>
@@ -1445,36 +1827,41 @@
 </section>
 
 <!-- ══════════ SECTION 9 · GALLERY ══════════ -->
-<section id="gallery" class="section" style="min-height: auto;">
+<section id="gallery" class="section gallery-anim-pending" style="min-height: auto; position: relative;">
+  <canvas id="gallery-particle-canvas"></canvas>
   <div class="gallery-header">
     <p class="section-label reveal">Memories</p>
     <h2 class="section-title-cn reveal reveal-delay-1">我们的足迹</h2>
+    <div class="ornament reveal reveal-delay-2" style="margin: 20px auto 0; max-width: 200px;">
+      <div class="ornament-diamond"></div>
+    </div>
   </div>
 
   <div class="gallery-carousel reveal reveal-delay-2" id="galleryCarousel">
     <button class="gallery-arrow prev" id="galleryPrev">&#8249;</button>
     <button class="gallery-arrow next" id="galleryNext">&#8250;</button>
     <div class="gallery-track" id="galleryTrack">
-      <div class="gallery-slide active"><img src="photos/1790686132786.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686205385.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686233163.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686240512.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686247256.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686253539.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686265054.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686270644.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686274229.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686278022.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686284401.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686287500.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686291573.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686300161.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686304585.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
-      <div class="gallery-slide"><img src="photos/1790686308531.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></div>
+      <div class="gallery-slide active"><img src="photos/1790686132786.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686205385.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686233163.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686240512.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686247256.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686253539.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686265054.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686270644.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686274229.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686278022.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686284401.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686287500.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686291573.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686300161.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686304585.jpg" alt=""></div>
+      <div class="gallery-slide"><img src="photos/1790686308531.jpg" alt=""></div>
     </div>
   </div>
 
   <div class="gallery-dots" id="galleryDots"></div>
+  <p id="gallery-photo-counter" style="text-align:center; margin-top:10px; font-family:'Cormorant Garamond',serif; font-size:12px; letter-spacing:0.25em; color:var(--ink-muted);"></p>
 </section>
 
 <!-- ══════════ SECTION 10 · CLOSING ══════════ -->
@@ -1530,6 +1917,9 @@
       document.querySelectorAll('#cover .reveal').forEach(el => el.classList.add('visible'));
       // Start fireworks after load
       startFireworks(document.getElementById('fireworks-canvas'));
+      // 自动播放背景音乐（UI 由 audio 'play' 事件驱动，无需手动操作按钮）
+      var audio = document.getElementById('bg-music');
+      if (audio) audio.play().catch(function() {});
     }, 1200);
   });
 
@@ -1926,11 +2316,14 @@
       }
     }, { passive: true });
 
-    // 个人照片 & 合照点击放大
-    document.querySelectorAll('.photo-frame img, .couple-frame img').forEach(function(img) {
-      img.style.cursor = 'zoom-in';
-      img.addEventListener('click', function() {
-        openLightbox(img.src, allImgs.indexOf(img));
+    // 个人照片 & 合照点击放大（绑在容器上，避免 position:absolute img 的事件问题）
+    document.querySelectorAll('.photo-frame, .couple-frame').forEach(function(frame) {
+      frame.style.cursor = 'zoom-in';
+      frame.addEventListener('click', function() {
+        var img = frame.querySelector('img');
+        if (!img) return;
+        var idx = allImgs.indexOf(img);
+        openLightbox(img.src, idx >= 0 ? idx : null);
       });
     });
 
@@ -1973,6 +2366,8 @@
       dotsEl.children[current].classList.add('active');
       track.style.transition = (animate === false) ? 'none' : 'transform 0.45s cubic-bezier(0.22,1,0.36,1)';
       track.style.transform = 'translateX(' + (-getOffset(current)) + 'px)';
+      var photoCounter = document.getElementById('gallery-photo-counter');
+      if (photoCounter) photoCounter.textContent = (current + 1) + ' / ' + total;
     }
 
     prevBtn.addEventListener('click', function() { resetAuto(); goTo(current - 1); });
@@ -2076,6 +2471,753 @@
       });
     }, { threshold: 0.3 });
     carouselObs.observe(document.getElementById('galleryCarousel'));
+  })();
+
+  // ════════════════════════════════
+  // HANDWRITE NAMES · HanziWriter 笔顺动画
+  // ════════════════════════════════
+  (function initHandwriteHanzi() {
+    var charSize = Math.min(Math.max(Math.round(window.innerWidth * 0.145), 52), 80);
+
+    // 两组分别定义，各自顺序书写
+    var groupA = [
+      { id: 'hanzi-wang1', char: '王' },
+      { id: 'hanzi-zhi',   char: '志' },
+      { id: 'hanzi-dong',  char: '东' },
+    ];
+    var groupB = [
+      { id: 'hanzi-wang2', char: '王' },
+      { id: 'hanzi-xi',    char: '茜' },
+    ];
+
+    function makeWriter(cfg, speed) {
+      var el = document.getElementById(cfg.id);
+      if (!el) return null;
+      el.style.width  = charSize + 'px';
+      el.style.height = charSize + 'px';
+      return HanziWriter.create(cfg.id, cfg.char, {
+        width:               charSize,
+        height:              charSize,
+        padding:             4,
+        strokeColor:         '#F5EDD8',
+        radicalColor:        '#F5EDD8',
+        outlineColor:        'rgba(255,255,255,0.10)',
+        strokeAnimationSpeed: speed || 1.8,
+        delayBetweenStrokes: 40,
+        showCharacter:       false,
+        showOutline:         true,
+      });
+    }
+
+    // 顺序书写一组字：写完第 i 个才开始第 i+1 个
+    function animateSequential(writers, index) {
+      if (index >= writers.length) return;
+      writers[index].animateCharacter({
+        onComplete: function() {
+          animateSequential(writers, index + 1);
+        }
+      });
+    }
+
+    // 汉字笔画数（用于估算书写时长，让两组同时写完）
+    var strokeCounts = { '王':4, '志':7, '东':5, '茜':9 };
+    function groupStrokes(group) {
+      return group.reduce(function(sum, cfg) {
+        return sum + (strokeCounts[cfg.char] || 6);
+      }, 0);
+    }
+
+    var started = false;
+
+    function startAnimation() {
+      if (started) return;
+      started = true;
+
+      var strokesA = groupStrokes(groupA); // 王志东：4+7+5=16
+      var strokesB = groupStrokes(groupB); // 王茜：4+9=13
+      var maxStrokes = Math.max(strokesA, strokesB);
+
+      // 基准：每画 0.22s，两组都按同一总时长来调整速度
+      var baseDuration = maxStrokes * 0.22;
+      var speedA = (strokesA * 0.22) / baseDuration * 1.8;
+      // 王茜笔画少，放慢让它和王志东同时写完
+      var speedB = (strokesB / strokesA) * speedA;
+
+      var writersA = groupA.map(function(cfg) { return makeWriter(cfg, speedA); }).filter(Boolean);
+      var writersB = groupB.map(function(cfg) { return makeWriter(cfg, speedB); }).filter(Boolean);
+
+      animateSequential(writersA, 0);
+      animateSequential(writersB, 0);
+    }
+
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          if (typeof HanziWriter === 'undefined') {
+            var t = setInterval(function() {
+              if (typeof HanziWriter !== 'undefined') {
+                clearInterval(t);
+                setTimeout(startAnimation, 500);
+              }
+            }, 100);
+          } else {
+            setTimeout(startAnimation, 500);
+          }
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+    obs.observe(document.getElementById('cover'));
+  })();
+
+  // ════════════════════════════════
+  // GALLERY PARTICLE ENTRANCE
+  // 粒子球 → 扩散 → 轮播图成型
+  // ════════════════════════════════
+  (function initGalleryParticles() {
+    var galleryEl = document.getElementById('gallery');
+    var carousel  = document.getElementById('galleryCarousel');
+    var canvas    = document.getElementById('gallery-particle-canvas');
+    if (!canvas || !carousel) return;
+
+    var ctx = canvas.getContext('2d');
+    var triggered = false;
+
+    function run() {
+      if (triggered) return;
+      triggered = true;
+
+      var galleryRect = galleryEl.getBoundingClientRect();
+      var GW = galleryEl.offsetWidth;
+      var GH = galleryEl.offsetHeight;
+      canvas.width  = GW;
+      canvas.height = GH;
+      canvas.style.width  = GW + 'px';
+      canvas.style.height = GH + 'px';
+
+      var cRect = carousel.getBoundingClientRect();
+      var CX = (cRect.left + cRect.width/2)  - galleryRect.left;
+      var CY = (cRect.top  + cRect.height/2) - galleryRect.top;
+      var BALL_R = Math.min(cRect.width, cRect.height) * 0.28;
+
+      var slides = Array.from(carousel.querySelectorAll('.gallery-slide'));
+      var slideInfos = slides.map(function(s) {
+        var r = s.getBoundingClientRect();
+        return {
+          cx: (r.left + r.width/2)  - galleryRect.left,
+          cy: (r.top  + r.height/2) - galleryRect.top,
+          w: r.width, h: r.height,
+        };
+      });
+
+      // 每张图片预加载到离屏 canvas，粒子绘制时用 drawImage
+      var THUMB_SIZE = 120;   // 离屏缩略图分辨率
+      var PTS_PER_SLIDE = 30;
+      var thumbs = new Array(slides.length).fill(null);
+      var loaded = 0;
+      var totalSlides = slides.length;
+
+      function buildParticles() {
+        var totalPts = totalSlides * PTS_PER_SLIDE;
+        var particles = [];
+        var COLS = 5; // 每张图 5×6 网格采样
+
+        slideInfos.forEach(function(info, si) {
+          for (var i = 0; i < PTS_PER_SLIDE; i++) {
+            var col = i % COLS;
+            var row = Math.floor(i / COLS);
+            var nCols = COLS;
+            var nRows = Math.ceil(PTS_PER_SLIDE / COLS);
+            var tx = info.cx - info.w/2 + (col+0.5)/nCols * info.w;
+            var ty = info.cy - info.h/2 + (row+0.5)/nRows * info.h;
+
+            var idx   = si * PTS_PER_SLIDE + i;
+            var phi   = Math.acos(1 - 2*(idx+0.5)/totalPts);
+            var theta = Math.PI*(1+Math.sqrt(5))*idx;
+            var bx    = CX + BALL_R * Math.sin(phi) * Math.cos(theta);
+            var by    = CY + BALL_R * Math.cos(phi);
+
+            particles.push({
+              bx: bx, by: by, tx: tx, ty: ty,
+              slideIdx: si,
+              // 该粒子对应图片的采样位置（归一化 0~1）
+              sx: col / COLS,
+              sy: row / nRows,
+            });
+          }
+        });
+        return particles;
+      }
+
+      function startAnim(particles) {
+        var T_GATHER=0.45, T_HOLD=0.15, T_EXPLODE=1.0, T_FADE=0.35;
+        var TOTAL = T_GATHER+T_HOLD+T_EXPLODE+T_FADE;
+        var startTs = null;
+
+        function easeOut3(p){ return 1-Math.pow(1-p,3); }
+        function easeInOut(p){ return p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2; }
+
+        var COLS = 5;
+        var nRows = Math.ceil(PTS_PER_SLIDE / COLS);
+
+        function tick(ts) {
+          if (!startTs) startTs = ts;
+          var el = (ts-startTs)/1000;
+          ctx.clearRect(0, 0, GW, GH);
+
+          var phase, prog;
+          if      (el < T_GATHER)                  { phase=1; prog=el/T_GATHER; }
+          else if (el < T_GATHER+T_HOLD)           { phase=2; prog=(el-T_GATHER)/T_HOLD; }
+          else if (el < T_GATHER+T_HOLD+T_EXPLODE) { phase=3; prog=(el-T_GATHER-T_HOLD)/T_EXPLODE; }
+          else                                      { phase=4; prog=(el-T_GATHER-T_HOLD-T_EXPLODE)/T_FADE; }
+          prog = Math.min(prog, 1);
+
+          // phase3 缩放 slides
+          if (phase===3) {
+            slides.forEach(function(s,i) {
+              var d=(i/slides.length)*0.3;
+              var sp=Math.max(0,Math.min(1,(prog-d)/0.75));
+              var sc=easeOut3(sp);
+              s.style.transition='none';
+              s.style.opacity=sc.toFixed(3);
+              s.style.transform='scale('+(0.05+sc*0.95).toFixed(3)+')';
+            });
+          }
+
+          // 绘制粒子
+          for (var i=0; i<particles.length; i++) {
+            var p=particles[i], px,py,alpha,sz;
+
+            if (phase===1) {
+              var e1=easeOut3(prog);
+              px=CX+(p.bx-CX)*e1; py=CY+(p.by-CY)*e1;
+              alpha=0.25+e1*0.75;
+              sz = 4 + e1*4;  // 球期：4~8px
+            } else if (phase===2) {
+              px=p.bx; py=p.by; alpha=1; sz=9;
+            } else if (phase===3) {
+              var d3=(p.slideIdx/slides.length)*0.28;
+              var sp3=Math.max(0,Math.min(1,(prog-d3)/0.75));
+              var e3=easeOut3(sp3);
+              px=p.bx+(p.tx-p.bx)*e3; py=p.by+(p.ty-p.by)*e3;
+              // 粒子从球期小尺寸随扩散放大到约 slide 网格尺寸
+              var targetSz = Math.min(
+                slideInfos[p.slideIdx].w / COLS,
+                slideInfos[p.slideIdx].h / nRows
+              ) * 1.05;
+              sz = 9 + (targetSz - 9) * e3;
+              alpha = 1 - sp3*0.85;
+            } else {
+              px=p.tx; py=p.ty;
+              alpha=(1-easeInOut(prog))*0.12;
+              sz=8;
+            }
+
+            if (alpha<=0.01 || sz<1) continue;
+            ctx.globalAlpha = alpha;
+
+            var thumb = thumbs[p.slideIdx];
+            if (thumb) {
+              // 从缩略图里取对应网格块
+              var tw = thumb.width, th = thumb.height;
+              var srcX = Math.floor(p.sx * tw);
+              var srcY = Math.floor(p.sy * th);
+              var srcW = Math.ceil(tw / COLS);
+              var srcH = Math.ceil(th / nRows);
+              srcX = Math.min(srcX, tw - srcW);
+              srcY = Math.min(srcY, th - srcH);
+              try {
+                ctx.drawImage(thumb, srcX, srcY, srcW, srcH,
+                              px - sz/2, py - sz/2, sz, sz);
+              } catch(err) {
+                ctx.fillStyle='#C9A96E';
+                ctx.fillRect(px-sz/2, py-sz/2, sz, sz);
+              }
+            } else {
+              ctx.fillStyle='#C9A96E';
+              ctx.fillRect(px-sz/2, py-sz/2, sz, sz);
+            }
+          }
+          ctx.globalAlpha=1;
+
+          // phase2 光晕
+          if (phase===2) {
+            var grd=ctx.createRadialGradient(CX,CY,0,CX,CY,BALL_R*2.2);
+            grd.addColorStop(0,'rgba(255,240,190,0.55)');
+            grd.addColorStop(0.5,'rgba(255,220,150,0.15)');
+            grd.addColorStop(1,'rgba(255,220,150,0)');
+            ctx.fillStyle=grd; ctx.fillRect(0,0,GW,GH);
+          }
+
+          if (el<TOTAL) {
+            requestAnimationFrame(tick);
+          } else {
+            galleryEl.classList.remove('gallery-anim-pending');
+            canvas.style.display='none';
+            slides.forEach(function(s){
+              s.style.transition=''; s.style.transform=''; s.style.opacity='';
+            });
+          }
+        }
+
+        galleryEl.classList.add('gallery-anim-pending');
+        slides.forEach(function(s){
+          s.style.transition='none'; s.style.opacity='0'; s.style.transform='scale(0.05)';
+        });
+        requestAnimationFrame(tick);
+      }
+
+      // 每张图片加载到离屏 canvas
+      slides.forEach(function(s, si) {
+        var img = s.querySelector('img');
+        if (!img) {
+          loaded++;
+          if (loaded===totalSlides) startAnim(buildParticles());
+          return;
+        }
+        var oc = document.createElement('canvas');
+        oc.width = THUMB_SIZE; oc.height = THUMB_SIZE;
+        var octx = oc.getContext('2d');
+        function onLoad() {
+          try { octx.drawImage(img, 0, 0, THUMB_SIZE, THUMB_SIZE); } catch(e){}
+          thumbs[si] = oc;
+          loaded++;
+          if (loaded===totalSlides) startAnim(buildParticles());
+        }
+        if (img.complete && img.naturalWidth) {
+          onLoad();
+        } else {
+          img.addEventListener('load', onLoad, {once:true});
+          setTimeout(function(){
+            if (!thumbs[si]) {
+              loaded++;
+              if (loaded===totalSlides) startAnim(buildParticles());
+            }
+          }, 600);
+        }
+      });
+    }
+
+    // 轮播进入视口时触发
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          obs.disconnect();
+          // 稍等布局稳定
+          setTimeout(run, 300);
+        }
+      });
+    }, { threshold: 0.35 });
+    obs.observe(galleryEl);
+  })();
+
+  // ════════════════════════════════
+  // COUPLE SECTION · 花瓣 + 光点
+  // ════════════════════════════════
+  (function initCouplePetals() {
+    var canvas = document.getElementById('couple-petals-canvas');
+    if (!canvas) return;
+    var ctx   = canvas.getContext('2d');
+    var W, H;
+    var petals = [];
+    var sparks = [];
+    var running = false;
+    var animId  = null;
+
+    function resize() {
+      var sec = document.getElementById('photo-couple');
+      W = sec.offsetWidth;
+      H = sec.offsetHeight;
+      canvas.width  = W;
+      canvas.height = H;
+    }
+
+    function spawnPetal() {
+      var colors = ['rgba(255,192,203,', 'rgba(255,100,100,', 'rgba(220,38,38,', 'rgba(255,218,185,', 'rgba(201,169,110,'];
+      var c = colors[Math.floor(petals.length % colors.length)];
+      petals.push({
+        x:     Math.random() * W,
+        y:     -20,
+        vx:    (Math.random() - 0.5) * 1.2,
+        vy:    0.8 + Math.random() * 1.2,
+        rot:   Math.random() * Math.PI * 2,
+        rotV:  (Math.random() - 0.5) * 0.06,
+        size:  6 + Math.random() * 8,
+        alpha: 0.7 + Math.random() * 0.3,
+        color: c,
+        swing: Math.random() * Math.PI * 2,
+        swingS: 0.02 + Math.random() * 0.02,
+      });
+    }
+
+    function spawnSpark() {
+      sparks.push({
+        x:     Math.random() * W,
+        y:     Math.random() * H,
+        r:     1 + Math.random() * 2.5,
+        alpha: 0,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.04 + Math.random() * 0.04,
+      });
+    }
+
+    // 初始化 30 颗光点
+    for (var i = 0; i < 30; i++) spawnSpark();
+
+    var frameCount = 0;
+    function tick() {
+      if (!running) return;
+      animId = requestAnimationFrame(tick);
+      ctx.clearRect(0, 0, W, H);
+      frameCount++;
+
+      // 每 12 帧生成一片花瓣
+      if (frameCount % 12 === 0) spawnPetal();
+
+      // 画花瓣
+      for (var i = petals.length - 1; i >= 0; i--) {
+        var p = petals[i];
+        p.swing += p.swingS;
+        p.x  += p.vx + Math.sin(p.swing) * 0.6;
+        p.y  += p.vy;
+        p.rot += p.rotV;
+        if (p.y > H + 20) { petals.splice(i, 1); continue; }
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        // 椭圆花瓣形
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size * 0.5, p.size, 0, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + '0.85)';
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 画闪烁光点
+      for (var j = 0; j < sparks.length; j++) {
+        var s = sparks[j];
+        s.phase += s.speed;
+        s.alpha  = (Math.sin(s.phase) + 1) / 2;
+        ctx.globalAlpha = s.alpha * 0.7;
+        ctx.fillStyle   = '#C9A96E';
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // 画 "囍" 字浮动（轻量）
+      if (frameCount % 200 === 0) {
+        ctx.font         = '24px serif';
+        ctx.fillStyle    = 'rgba(201,169,110,0.25)';
+        ctx.globalAlpha  = 1;
+        ctx.fillText('囍', Math.random() * (W - 40) + 20, Math.random() * (H - 40) + 20);
+      }
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      resize();
+      tick();
+    }
+    function stop() {
+      running = false;
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      ctx.clearRect(0, 0, W, H);
+      petals = [];
+    }
+
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) start();
+        else stop();
+      });
+    }, { threshold: 0.2 });
+    obs.observe(document.getElementById('photo-couple'));
+
+    window.addEventListener('resize', function() {
+      if (running) { resize(); }
+    });
+  })();
+
+  // ════════════════════════════════
+  // COUPLE SECTION · 玫瑰花瓣 + 星尘（CSS 动画）
+  // ════════════════════════════════
+  (function initCoupleDecorations() {
+    // ── 玫瑰花瓣 SVG 形状（4种） ──
+    var petalPaths = [
+      // 椭圆瓣
+      '<ellipse cx="10" cy="6" rx="9" ry="6" fill="COLOR"/>',
+      // 心形瓣
+      '<path d="M10 14 C4 10 0 6 0 3.5 A3.5 3.5 0 0 1 10 2 A3.5 3.5 0 0 1 20 3.5 C20 6 16 10 10 14Z" fill="COLOR"/>',
+      // 水滴瓣
+      '<path d="M10 0 C14 4 16 8 10 14 C4 8 6 4 10 0Z" fill="COLOR"/>',
+      // 扁椭圆
+      '<ellipse cx="10" cy="5" rx="10" ry="5" fill="COLOR"/>',
+    ];
+    var petalColors = [
+      'rgba(255,182,193,0.75)',   // 浅粉
+      'rgba(255,160,172,0.65)',   // 玫粉
+      'rgba(250,210,210,0.7)',    // 淡粉
+      'rgba(255,200,160,0.6)',    // 桃色
+      'rgba(230,150,160,0.55)',   // 深玫
+    ];
+
+    var container = document.getElementById('couple-rose-petals');
+    if (!container) return;
+
+    for (var i = 0; i < 22; i++) {
+      var div = document.createElement('div');
+      div.className = 'rose-petal';
+      var pathIdx  = i % petalPaths.length;
+      var colorIdx = i % petalColors.length;
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 15" width="' + (10 + Math.random()*14) + '" height="' + (8 + Math.random()*10) + '">'
+              + petalPaths[pathIdx].replace('COLOR', petalColors[colorIdx])
+              + '</svg>';
+      div.innerHTML = svg;
+      div.style.cssText = [
+        'left:'              + (Math.random() * 100) + '%',
+        'animation-duration:' + (7 + Math.random() * 10) + 's',
+        'animation-delay:'   + (Math.random() * 14) + 's',
+        'transform:rotate('  + (Math.random() * 360) + 'deg)',
+      ].join(';');
+      container.appendChild(div);
+    }
+
+    // ── 星尘光点 ──
+    var stardust = document.getElementById('couple-stardust');
+    if (!stardust) return;
+
+    for (var j = 0; j < 28; j++) {
+      var dot = document.createElement('div');
+      dot.className = 'stardust-dot';
+      var size = 2 + Math.random() * 5;
+      dot.style.cssText = [
+        'width:'             + size + 'px',
+        'height:'            + size + 'px',
+        'left:'              + (Math.random() * 100) + '%',
+        'top:'               + (Math.random() * 100) + '%',
+        'animation-duration:' + (2 + Math.random() * 4) + 's',
+        'animation-delay:'   + (Math.random() * 5) + 's',
+      ].join(';');
+      stardust.appendChild(dot);
+    }
+  })();
+
+  // ════════════════════════════════
+  // VENUE MAP · 高德地图（懒加载）
+  // ════════════════════════════════
+  (function initVenueMap() {
+    var mapEl = document.getElementById('venue-map');
+    if (!mapEl) return;
+    var loaded = false;
+
+    var VENUE     = [120.0614, 30.2865];
+    var VENUE_NAME = '天禄堂西溪庄园';
+    var VENUE_LAT  = VENUE[1];
+    var VENUE_LNG  = VENUE[0];
+
+    // ── 跳转导航（点击地图触发） ──
+    function openNav() {
+      var ua = navigator.userAgent;
+      var isWeixin = /MicroMessenger/i.test(ua);
+      var isIOS    = /iPhone|iPad|iPod/i.test(ua);
+      var isAndroid = /Android/i.test(ua);
+
+      if (isWeixin) {
+        // 微信内：腾讯地图 H5（唯一可靠方式）
+        window.location.href =
+          'https://apis.map.qq.com/uri/v1/marker' +
+          '?marker=coord:' + VENUE_LAT + ',' + VENUE_LNG +
+          ';title:' + encodeURIComponent(VENUE_NAME) +
+          '&referer=engagement';
+      } else if (isIOS) {
+        // iOS：先尝试高德 App scheme，1.5s 后 fallback 到高德 H5
+        var t = setTimeout(function() {
+          window.location.href =
+            'https://uri.amap.com/marker?position=' + VENUE_LNG + ',' + VENUE_LAT +
+            '&name=' + encodeURIComponent(VENUE_NAME) + '&src=engagement&coordinate=gaode&callnative=1';
+        }, 1500);
+        window.location.href =
+          'iosamap://viewMap?sourceApplication=engagement' +
+          '&poiname=' + encodeURIComponent(VENUE_NAME) +
+          '&lat=' + VENUE_LAT + '&lon=' + VENUE_LNG + '&dev=0';
+        window.addEventListener('blur', function() { clearTimeout(t); }, { once: true });
+      } else if (isAndroid) {
+        // Android：高德 App scheme，fallback 到 H5
+        var t2 = setTimeout(function() {
+          window.location.href =
+            'https://uri.amap.com/marker?position=' + VENUE_LNG + ',' + VENUE_LAT +
+            '&name=' + encodeURIComponent(VENUE_NAME) + '&src=engagement&coordinate=gaode&callnative=1';
+        }, 1500);
+        window.location.href =
+          'androidamap://viewMap?sourceApplication=engagement' +
+          '&poiname=' + encodeURIComponent(VENUE_NAME) +
+          '&lat=' + VENUE_LAT + '&lon=' + VENUE_LNG + '&dev=0';
+        window.addEventListener('blur', function() { clearTimeout(t2); }, { once: true });
+      } else {
+        // PC：高德网页版
+        window.open(
+          'https://uri.amap.com/marker?position=' + VENUE_LNG + ',' + VENUE_LAT +
+          '&name=' + encodeURIComponent(VENUE_NAME) + '&src=engagement&coordinate=gaode',
+          '_blank'
+        );
+      }
+    }
+
+    // 给地图容器加点击提示样式
+    mapEl.style.cursor = 'pointer';
+    mapEl.title = '点击导航至' + VENUE_NAME;
+    mapEl.addEventListener('click', openNav);
+
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (!entry.isIntersecting || loaded) return;
+        loaded = true;
+        obs.disconnect();
+
+        window._AMapSecurityConfig = {
+          securityJsCode: '71439ace8cb4ad59f22bc3e07267fef0',
+        };
+
+        var script = document.createElement('script');
+        script.src = 'https://webapi.amap.com/loader.js';
+        script.onload = function() {
+          AMapLoader.load({
+            key: '71439ace8cb4ad59f22bc3e07267fef0',
+            version: '2.0',
+            plugins: ['AMap.Scale'],
+          }).then(function(AMap) {
+            AMap.getConfig().appname = 'amap-jsapi-skill';
+
+            var map = new AMap.Map('venue-map', {
+              viewMode: '2D',
+              zoom: 15,
+              center: VENUE,
+              mapStyle: 'amap://styles/light',
+              dragEnable: false,
+              zoomEnable: false,
+              doubleClickZoom: false,
+              keyboardEnable: false,
+              scrollWheel: false,
+              touchZoom: false,
+            });
+
+            map.addControl(new AMap.Scale({ position: 'LB' }));
+
+            // 金色光晕标记
+            var marker = new AMap.Marker({
+              position: VENUE,
+              content: [
+                '<div style="position:relative;width:48px;height:48px;">',
+                  '<div style="position:absolute;inset:0;border-radius:50%;background:rgba(201,169,110,0.2);animation:venue-ping 1.8s ease-out infinite;"></div>',
+                  '<div style="position:absolute;inset:6px;border-radius:50%;background:rgba(201,169,110,0.15);animation:venue-ping 1.8s ease-out 0.6s infinite;"></div>',
+                  '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;background:#C9A96E;border-radius:50%;border:3px solid #fff;box-shadow:0 0 10px rgba(201,169,110,0.9),0 2px 6px rgba(0,0,0,0.2);"></div>',
+                '</div>',
+              ].join(''),
+              offset: new AMap.Pixel(-24, -24),
+              title: VENUE_NAME,
+            });
+            map.add(marker);
+
+            // 点击导航提示浮层（初次显示 2s 后淡出）
+            var tip = document.createElement('div');
+            tip.textContent = '点击导航 →';
+            tip.style.cssText = [
+              'position:absolute;bottom:8px;right:8px;z-index:999',
+              'font-family:"Cormorant Garamond",serif;font-size:11px',
+              'letter-spacing:0.2em;color:#C9A96E',
+              'background:rgba(20,12,6,0.72);padding:4px 10px',
+              'border:1px solid rgba(201,169,110,0.35)',
+              'pointer-events:none',
+              'transition:opacity 0.6s ease',
+            ].join(';');
+            mapEl.style.position = 'relative';
+            mapEl.appendChild(tip);
+            setTimeout(function() { tip.style.opacity = '0'; }, 2200);
+
+          }).catch(function(e) {
+            console.error('地图加载失败', e);
+          });
+        };
+        document.head.appendChild(script);
+      });
+    }, { threshold: 0.3 });
+
+    obs.observe(mapEl);
+  })();
+
+  // ════════════════════════════════
+  // BACKGROUND MUSIC
+  // ════════════════════════════════
+  (function initMusic() {
+    var btn   = document.getElementById('music-btn');
+    var audio = document.getElementById('bg-music');
+    if (!btn || !audio) return;
+
+    audio.volume = 0.35;
+
+    function syncUI() {
+      var isPlaying = !audio.paused;
+      btn.classList.toggle('muted', !isPlaying);
+      btn.setAttribute('aria-label', isPlaying ? '静音' : '播放');
+    }
+
+    // 以 audio 事件为 UI 驱动来源，兼容自动播放与外部调用
+    audio.addEventListener('play',  syncUI);
+    audio.addEventListener('pause', syncUI);
+
+    function play() {
+      var p = audio.play();
+      if (p && p.then) p.catch(function() { syncUI(); });
+    }
+
+    function pause() {
+      audio.pause();
+    }
+
+    // 兜底：首次任意交互触发（自动播放被浏览器拦截时，跳过音符按钮自身的点击）
+    function tryOnce(e) {
+      if (e.target === btn || btn.contains(e.target)) return;
+      if (audio.paused) play();
+    }
+    ['pointerdown', 'touchstart'].forEach(function(e) {
+      document.addEventListener(e, tryOnce, { once: true, passive: true });
+    });
+
+    // 按钮点击切换（以 audio.paused 为准，兼容自动播放设置的状态）
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (audio.paused) { play(); } else { pause(); }
+    });
+
+    // 切后台淡出，回来淡入
+    function fadeTo(target, ms) {
+      var steps = 20;
+      var delta = (target - audio.volume) / steps;
+      var i = 0;
+      var t = setInterval(function() {
+        i++;
+        audio.volume = Math.max(0, Math.min(1, audio.volume + delta));
+        if (i >= steps) {
+          clearInterval(t);
+          audio.volume = target;
+          if (target === 0) audio.pause();
+        }
+      }, ms / steps);
+    }
+
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        fadeTo(0, 600);
+      } else if (!audio.paused) {
+        audio.play();
+        fadeTo(0.35, 800);
+      }
+    });
   })();
 
 </script>
